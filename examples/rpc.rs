@@ -1,3 +1,34 @@
+//! This module demonstrates a simple RPC (Remote Procedure Call) setup using the `taps` library.
+//!
+//! The `taps` library provides a basic pub-sub (publish-subscribe) mechanism, which is used here to facilitate RPC communication.
+//!
+//! # Architecture
+//!
+//! - **RPC Client**: Sends a request and waits for a response.
+//! - **RPC Server**: Listens for requests, processes them, and sends a response back.
+//!
+//! Both the client and server use the `taps` library's `Client` type to communicate.
+//!
+//! # Data Structures
+//!
+//! - `RpcRequest`: Enum representing the different types of requests the server can handle.
+//! - `RpcResponse`: Enum representing the potential responses from the server.
+//! - `RpcMessage`: Struct that encapsulates an `RpcRequest` or `RpcResponse` with a unique ID. This ID is used to match responses to their corresponding requests.
+//! - `MessageContent`: Enum that can hold either a request or a response.
+//!
+//! # Flow
+//!
+//! 1. The main function initializes the broker from the `taps` library.
+//! 2. Two tasks are spawned representing the RPC client and the RPC server.
+//! 3. The client subscribes to a topic to receive its response. The topic is unique for each client request, derived from a UUID.
+//! 4. The client sends an `RpcRequest` wrapped in an `RpcMessage` to the `rpc_requests` topic.
+//! 5. The server is subscribed to the `rpc_requests` topic and picks up the client's request.
+//! 6. After processing the request, the server sends an `RpcResponse` wrapped in an `RpcMessage` to the response topic specific to the client's request UUID.
+//! 7. The client receives the response on its unique topic and processes it.
+//!
+//! # Usage
+//!
+//! Running this module's `main` function will initiate the RPC flow. The client sends a request to compute the square of a number, and the server responds with the result.
 use log::{error, info};
 use taps::{Broker, Client};
 use tokio::sync::mpsc;
@@ -42,7 +73,7 @@ async fn main() {
     info!("Broker started!");
 
     let mut worker_client = Client::new(broker_tx.clone());
-    let rpc_client_task = tokio::spawn(async move {
+    let worker_task = tokio::spawn(async move {
         let client_uuid = Uuid::new_v4();
         let response_topic = format!("rpc_responses_{}", client_uuid);
 
@@ -71,7 +102,7 @@ async fn main() {
     });
 
     let mut rpc_client = Client::new(broker_tx.clone());
-    let rpc_server_task = tokio::spawn(async move {
+    let rpc_task = tokio::spawn(async move {
         rpc_client.subscribe("rpc_requests".to_string()).await;
         info!("RPC Server started and subscribed to 'rpc_requests' topic.");
 
@@ -97,5 +128,5 @@ async fn main() {
         }
     });
 
-    let _ = tokio::join!(rpc_client_task, rpc_server_task);
+    let _ = tokio::join!(worker_task, rpc_task);
 }

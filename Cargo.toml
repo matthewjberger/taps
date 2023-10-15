@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 authors = ["Matthew Berger <matthewjordanberger@gmail.com>"]
 description = """
-taps (Topic-based Asynchronous Pub/Sub broker) is an async topic-based
-in-process message broker that allows tasks to publish and subscribe 
+taps (Tokio Asynchronous Pub/Sub broker) is an in-process async message broker
+that can be used for messaging between spawned tokio tasks.
 """
 homepage = "https://github.com/matthewjberger/taps"
 repository = "https://github.com/matthewjberger/taps"
