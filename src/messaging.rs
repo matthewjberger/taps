@@ -220,4 +220,48 @@ mod tests {
         assert_eq!(msg1, Some("Message1".to_string()));
         assert_eq!(msg2, Some("Message2".to_string()));
     }
+
+    #[tokio::test]
+    async fn test_concurrent_clients() {
+        let mut broker = Broker::new();
+        let (worker_tx, worker_rx) = mpsc::channel(32);
+        tokio::spawn(async move {
+            broker.run(worker_rx).await;
+        });
+
+        let (result_tx, mut result_rx) = mpsc::channel(1);
+
+        let worker_tx1 = worker_tx.clone();
+
+        // Task 1: Client1 subscribes to a topic
+        let client1_task = tokio::spawn(async move {
+            let mut client1 = Client::new(worker_tx1);
+            client1.subscribe("concurrent_topic".to_string()).await;
+            let received_msg = client1.receive("concurrent_topic").await;
+            let _ = result_tx.send(received_msg).await;
+        });
+
+        let worker_tx2 = worker_tx.clone();
+
+        // Task 2: Client2 publishes a message to the same topic
+        let client2_task = tokio::spawn(async move {
+            let client2 = Client::new(worker_tx2);
+            tokio::time::sleep(tokio::time::Duration::from_millis(50)).await; // Ensure client1 has time to subscribe
+            client2
+                .publish(
+                    "concurrent_topic".to_string(),
+                    "Hello from task!".to_string(),
+                )
+                .await;
+        });
+
+        // Await both tasks to complete
+        let _ = tokio::try_join!(client1_task, client2_task);
+
+        let received_msg = result_rx
+            .recv()
+            .await
+            .expect("Failed to get result from task");
+        assert_eq!(received_msg, Some("Hello from task!".to_string()));
+    }
 }

@@ -14,3 +14,8 @@ license = "MIT"
 
 [dependencies]
 tokio = { version = "1.33.0", features = ["full"] }
+
+[dev-dependencies]
+log = "0.4"
+env_logger = "0.10.0"
+uuid = { version = "1.4.1", features = ["v4"] }
