@@ -1,12 +1,22 @@
+//! This module provides an implementation of a publish-subscribe (pub-sub) pattern using the `taps` library.
+
 use std::collections::HashMap;
 use tokio::sync::{broadcast, mpsc};
 
+/// Represents a message that can be sent or received by a client.
+///
+/// Messages can either be to subscribe to a topic, or to publish content to a topic.
 #[derive(Debug, Clone)]
 pub enum Message<T> {
     Subscribe(String, mpsc::Sender<broadcast::Receiver<T>>),
     Publish(String, T), // Topic and content
 }
 
+/// The primary broker for managing topics and message routing.
+///
+/// The broker maintains a list of topics, where each topic is associated with
+/// a broadcast sender. Clients can subscribe to these topics to receive messages,
+/// and can also publish messages to these topics.
 pub struct Broker<T: Clone> {
     topics: HashMap<String, broadcast::Sender<T>>,
 }
@@ -23,6 +33,10 @@ impl<T: Clone> Broker<T> {
         Self::default()
     }
 
+    /// The main broker loop. It listens for incoming messages (subscriptions or publications)
+    /// and processes them.
+    ///
+    /// This function is intended to be run in an async task, typically in the background.
     pub async fn run(&mut self, mut worker_rx: mpsc::Receiver<Message<T>>) {
         while let Some(msg) = worker_rx.recv().await {
             match msg {
@@ -47,6 +61,11 @@ impl<T: Clone> Broker<T> {
     }
 }
 
+/// Represents a client that can communicate with the broker.
+///
+/// Clients can subscribe to topics to receive messages and can also
+/// publish messages to these topics. Each client maintains its own
+/// set of subscriptions.
 pub struct Client<T: Clone> {
     broker_tx: mpsc::Sender<Message<T>>,
     subscriptions: HashMap<String, broadcast::Receiver<T>>,
@@ -62,6 +81,7 @@ impl<T: Clone> Clone for Client<T> {
 }
 
 impl<T: Clone> Client<T> {
+    /// Create a new client instance with a given broker channel.
     pub fn new(broker_tx: mpsc::Sender<Message<T>>) -> Self {
         let subscriptions = HashMap::new();
         Self {
@@ -70,6 +90,9 @@ impl<T: Clone> Client<T> {
         }
     }
 
+    /// Subscribe to a given topic to receive messages.
+    ///
+    /// After subscribing, the client can call `receive` to get messages sent to this topic.
     pub async fn subscribe(&mut self, topic: String) {
         let (tx, mut rx) = mpsc::channel(1);
         let _ = self
@@ -81,10 +104,14 @@ impl<T: Clone> Client<T> {
         }
     }
 
+    /// Publish a message to a given topic.
     pub async fn publish(&self, topic: String, message: T) {
         let _ = self.broker_tx.send(Message::Publish(topic, message)).await;
     }
 
+    /// Receive a message from a subscribed topic.
+    ///
+    /// Returns `None` if the client is not subscribed to the given topic.
     pub async fn receive(&mut self, topic: &str) -> Option<T> {
         if let Some(rx) = self.subscriptions.get_mut(topic) {
             rx.recv().await.ok()
