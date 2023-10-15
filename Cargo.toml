@@ -1,6 +1,6 @@
 [package]
 name = "taps"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 authors = ["Matthew Berger <matthewjordanberger@gmail.com>"]
 description = """

@@ -20,7 +20,7 @@ Add the following to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-taps = "0.2.1"
+taps = "0.2.2"
 tokio = { version = "1.33.0", features = ["full"] }
 ```
 
