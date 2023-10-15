@@ -65,7 +65,6 @@ async fn main() {
 
     let mut broker = Broker::new();
     let (broker_tx, broker_rx) = mpsc::channel(32);
-    let broker_tx = broker_tx.clone();
 
     tokio::spawn(async move {
         broker.run(broker_rx).await;
