@@ -1,4 +1,4 @@
-//! # `taps` - Tokio Async Topic-based Pub/Sub
+//! # `taps` - Tokio Async Pub/Sub
 //!
 //! This module provides a generic message broker that allows
 //! clients on separate spawned tokio tasks to communicate with each other.
