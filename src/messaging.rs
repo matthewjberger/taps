@@ -11,10 +11,16 @@ pub struct Broker<T: Clone> {
     topics: HashMap<String, broadcast::Sender<T>>,
 }
 
-impl<T: Clone> Broker<T> {
-    pub fn new() -> Self {
+impl<T: Clone> Default for Broker<T> {
+    fn default() -> Self {
         let topics = HashMap::new();
         Self { topics }
+    }
+}
+
+impl<T: Clone> Broker<T> {
+    pub fn new() -> Self {
+        Self::default()
     }
 
     pub async fn run(&mut self, mut worker_rx: mpsc::Receiver<Message<T>>) {
