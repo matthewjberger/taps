@@ -1,0 +1,16 @@
+[package]
+name = "taps"
+version = "0.1.0"
+edition = "2021"
+authors = ["Matthew Berger <matthewjordanberger@gmail.com>"]
+description = """
+taps (Topic-based Asynchronous Pub/Sub broker) is an async topic-based
+in-process message broker that allows tasks to publish and subscribe 
+"""
+homepage = "https://github.com/matthewjberger/taps"
+repository = "https://github.com/matthewjberger/taps"
+keywords = ["async", "tokio", "messaging"]
+license = "MIT"
+
+[dependencies]
+tokio = { version = "1.33.0", features = ["full"] }
