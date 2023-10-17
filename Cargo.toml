@@ -16,6 +16,9 @@ license = "MIT"
 tokio = { version = "1.33.0", features = ["full"] }
 
 [dev-dependencies]
-log = "0.4"
 env_logger = "0.10.0"
-uuid = { version = "1.4.1", features = ["v4"] }
+log = "0.4"
+serde = { version = "1.0.189", features = ["derive"] }
+tokio = { version = "1.33.0", features = ["full"] }
+uuid = { version = "1.4.1", features = ["v4", "serde"] }
+warp = "0.3.6"
