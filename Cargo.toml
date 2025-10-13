@@ -13,12 +13,12 @@ keywords = ["async", "tokio", "messaging"]
 license = "MIT"
 
 [dependencies]
-tokio = { version = "1.33.0", features = ["full"] }
+tokio = { version = "1.33.0", features = ["sync"] }
 
 [dev-dependencies]
 env_logger = "0.10.0"
 log = "0.4"
 serde = { version = "1.0.189", features = ["derive"] }
-tokio = { version = "1.33.0", features = ["full"] }
+tokio = { version = "1.33.0", features = ["macros", "rt-multi-thread", "sync"] }
 uuid = { version = "1.4.1", features = ["v4", "serde"] }
 warp = "0.3.6"
